@@ -47,6 +47,19 @@ public class MineSweeper {
     void initializeMines(int firstCellCol, int firstCellRow) {
         // TODO fill in
         // Hint, use `Optional.of(...)` to create a non-empty `Optional`.
+    		boolean[][] b=new boolean[WIDTH][HEIGHT];
+    		int xx=0;
+    		while(xx>NUM_MINES) {
+    			int x=rng.nextInt(WIDTH);
+    			int y=rng.nextInt(HEIGHT);
+    			if(b[x][y]!=true && !(firstCellCol==x && firstCellRow==y)) {
+    				b[x][y]=true;
+    				xx++;
+    			}
+    			
+    		}
+    		mines=Optional.of(b);
+    	
     }
     
     /**
@@ -59,7 +72,16 @@ public class MineSweeper {
      */
     Integer getNeighboringMinesCount(int col, int row) {
         // TODO fill in
-        return null;
+    	int num=0;
+    	boolean[][] b=mines.get();
+    		for(int i=-1;i<2;i++) {
+    			for(int x=-1;x<2;x++) {
+    		if(b[row+i][col+x]==true) {
+    			num++;
+    		}
+    		}
+    }
+        return num;
     }
     
     /**
@@ -69,13 +91,22 @@ public class MineSweeper {
      * 
      * @param unused Just here so that method can be passed as ActionListener.
      */
-    void resetGame(Object unused) {
+     void resetGame() {
         // TODO fill in
-    }
+    	mines=mines.empty();
+    	for(int i=0;i<buttons.length;i++) {
+    		for(int x=0;x<buttons[i].length;x++) {
+    			buttons[i][x].setText("");
+    			buttons[i][x].setEnabled(true);
+    		}
+    	}
+    	}
+    
     
     private void createAndShowFrame() {
         final JMenuItem resetMenuItem = new JMenuItem("Reset");
-        resetMenuItem.addActionListener(null); // TODO replace null with method reference that resets the game
+         
+        resetMenuItem.addActionListener(evt-> resetGame()); // TODO replace null with method reference that resets the game
         
         final JMenu gameMenu = new JMenu("Game");
         gameMenu.add(resetMenuItem);
@@ -85,7 +116,7 @@ public class MineSweeper {
         
         final JPanel controlPanel = new JPanel();
         final JButton resetButton = new JButton("Reset");
-        resetButton.addActionListener(null); // TODO replace null with method reference that resets the game
+        resetButton.addActionListener(evt->resetGame()); // TODO replace null with method reference that resets the game
         controlPanel.add(resetButton);
         
         final JPanel gameBoardPanel = new JPanel();
@@ -94,21 +125,46 @@ public class MineSweeper {
         gameBoardPanel.setLayout(new GridLayout(HEIGHT, WIDTH));
         IntStream.range(0, HEIGHT).forEach(row ->
             IntStream.range(0, WIDTH).forEach(col -> {
+            		boolean[][] c=new boolean[WIDTH][HEIGHT];
+            		initializeMines(row, col);
+            		c=mines.get();
                 // This code loops through the rows and columns,
                 // creating a button for each cell.
                 final JButton b = new JButton();
                 buttons[row][col] = b;
+                boolean p=false;
+                for(int x=0;x<WIDTH;x++) {
+                	for(int y=0;y<HEIGHT;y++) {
+                		if(c[x][y]==true) {
+                			p=true;
+                		}
+                	}
+                }
+                
                 // When the cell button is pressed, it should:
                 // 1. Initializes the mines if it is not yet initialized.
+                
                 // 2. If the button is a mine:
                 //    - Change the button text to an "X"
                 //    - Display "You Lose" in a dialog box
+                
+                if(c[row][col]==true) {
+                	b.setText("X");
+                	System.out.println("you lose");
+                }
                 //    Otherwise:
                 //    - Change the button text to the number of neighboring
                 //      cells are mines.
+               if(c[row][col]!=true) {
+                //	b.setText(""+getNeighboringMinesCount(col, row));
+               }
+                numCellsToOpen--;
                 //    - Decrement `numCellsToOpen`
                 //    - If all cells are open (i.e., numCellsToOpen == 0),
                 //      display "You Win" in a dialog box
+                if(numCellsToOpen==0) {
+                	System.out.println("you win");
+                }
                 //    - Extra credit: If the number of neighboring cells is 0,
                 //      automatically open all neighboring cells
                 b.addActionListener(null); // TODO replace null with lambda expression
