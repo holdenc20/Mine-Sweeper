@@ -27,7 +27,7 @@ public class MineSweeper {
     static final int WIDTH = 10;
     static final int HEIGHT = 15;
     static final int CELL_SIZE = 20;
-    static final int NUM_MINES = 40;
+    static final int NUM_MINES = 25;
     
     final JFrame frame = new JFrame();
     JButton[][] buttons = new JButton[WIDTH][HEIGHT];
