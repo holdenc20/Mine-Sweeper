@@ -27,13 +27,13 @@ public class MineSweeper {
     static final int WIDTH = 10;
     static final int HEIGHT = 15;
     static final int CELL_SIZE = 20;
-    static final int NUM_MINES = 15;
+    static final int NUM_MINES = 40;
     
     final JFrame frame = new JFrame();
-    final JButton[][] buttons = new JButton[HEIGHT][WIDTH];
+    JButton[][] buttons = new JButton[WIDTH][HEIGHT];
     final Random rng = new Random();
     Optional<boolean[][]> mines = Optional.empty();
-    int numCellsToOpen;
+    int numCellsToOpen=WIDTH*HEIGHT;
     
     /**
      * Initializes:
@@ -48,16 +48,19 @@ public class MineSweeper {
         // TODO fill in
         // Hint, use `Optional.of(...)` to create a non-empty `Optional`.
     		boolean[][] b=new boolean[WIDTH][HEIGHT];
+    		
     		int xx=0;
-    		while(xx>NUM_MINES) {
+    		while(xx<NUM_MINES) {
     			int x=rng.nextInt(WIDTH);
     			int y=rng.nextInt(HEIGHT);
-    			if(b[x][y]!=true && !(firstCellCol==x && firstCellRow==y)) {
+    			if(b[x][y]!=true) {
     				b[x][y]=true;
     				xx++;
+    				
     			}
     			
     		}
+    		
     		mines=Optional.of(b);
     	
     }
@@ -76,8 +79,10 @@ public class MineSweeper {
     	boolean[][] b=mines.get();
     		for(int i=-1;i<2;i++) {
     			for(int x=-1;x<2;x++) {
-    		if(b[row+i][col+x]==true) {
+    		if(col+i>=0 && col+i<WIDTH && row+x>=0 && row+x<HEIGHT) {
+    		if(b[col+i][row+x]==true) {
     			num++;
+    		}
     		}
     		}
     }
@@ -93,13 +98,12 @@ public class MineSweeper {
      */
      void resetGame() {
         // TODO fill in
+    	 frame.removeAll();
+    	 numCellsToOpen=WIDTH*HEIGHT;
     	mines=mines.empty();
-    	for(int i=0;i<buttons.length;i++) {
-    		for(int x=0;x<buttons[i].length;x++) {
-    			buttons[i][x].setText("");
-    			buttons[i][x].setEnabled(true);
-    		}
-    	}
+    	buttons = new JButton[WIDTH][HEIGHT];
+    	final MineSweeper mineSweeper = new MineSweeper();
+        SwingUtilities.invokeLater(mineSweeper::createAndShowFrame);
     	}
     
     
@@ -123,51 +127,17 @@ public class MineSweeper {
         gameBoardPanel.setSize(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE);
         gameBoardPanel.setBackground(Color.WHITE);
         gameBoardPanel.setLayout(new GridLayout(HEIGHT, WIDTH));
+        initializeMines(0, 0);
         IntStream.range(0, HEIGHT).forEach(row ->
             IntStream.range(0, WIDTH).forEach(col -> {
+            		
             		boolean[][] c=new boolean[WIDTH][HEIGHT];
-            		initializeMines(row, col);
             		c=mines.get();
                 // This code loops through the rows and columns,
                 // creating a button for each cell.
                 final JButton b = new JButton();
-                buttons[row][col] = b;
-                boolean p=false;
-                for(int x=0;x<WIDTH;x++) {
-                	for(int y=0;y<HEIGHT;y++) {
-                		if(c[x][y]==true) {
-                			p=true;
-                		}
-                	}
-                }
-                
-                // When the cell button is pressed, it should:
-                // 1. Initializes the mines if it is not yet initialized.
-                
-                // 2. If the button is a mine:
-                //    - Change the button text to an "X"
-                //    - Display "You Lose" in a dialog box
-                
-                if(c[row][col]==true) {
-                	b.setText("X");
-                	System.out.println("you lose");
-                }
-                //    Otherwise:
-                //    - Change the button text to the number of neighboring
-                //      cells are mines.
-               if(c[row][col]!=true) {
-                //	b.setText(""+getNeighboringMinesCount(col, row));
-               }
-                numCellsToOpen--;
-                //    - Decrement `numCellsToOpen`
-                //    - If all cells are open (i.e., numCellsToOpen == 0),
-                //      display "You Win" in a dialog box
-                if(numCellsToOpen==0) {
-                	System.out.println("you win");
-                }
-                //    - Extra credit: If the number of neighboring cells is 0,
-                //      automatically open all neighboring cells
-                b.addActionListener(null); // TODO replace null with lambda expression
+                buttons[col][row] = b;
+                b.addActionListener(evt->actionP(col,row));
                 gameBoardPanel.add(b);
             })
         );
@@ -183,7 +153,48 @@ public class MineSweeper {
         
         frame.setVisible(true);
     }
+    boolean first=false;
+    public void actionP(int col, int row) {
+     boolean[][] c=new boolean[WIDTH][HEIGHT];
+    	c=mines.get();
+    	if(numCellsToOpen==NUM_MINES) {
+    		System.out.println("you win");
+    	}
+    	if(first==false) {
+    		
+    		initializeMines(col, row);
+    		
+    		first=true;
+    	}
+    	
+   
     
+    
+    		numCellsToOpen--;
+    		if(c[col][row]==true) {
+            	buttons[col][row].setText("X");
+            	
+        }
+    		if(c[col][row]!=true) {
+    			buttons[col][row].setText(""+getNeighboringMinesCount(col, row));
+    			if(getNeighboringMinesCount(col, row)==0) {
+    				for(int i=-1;i<2;i++) {
+    	    			for(int x=-1;x<2;x++) {
+    	    				if(col+i>=0 && col+i<WIDTH && row+x>=0 && row+x<HEIGHT) {
+    	    					if(buttons[col+i][row+x].getText().equals(""+0)) {
+    	    					}
+    	    					else {
+    	    						actionP(col+i,row+x);
+    	    					}
+    	    						
+    	    					}
+    	    		}
+    			}
+    			}
+           
+          }
+    	}
+   
     public static void main(String[] args) {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         final MineSweeper mineSweeper = new MineSweeper();
